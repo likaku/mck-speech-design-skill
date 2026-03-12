@@ -261,7 +261,7 @@ The final output includes:
 2. **Timing overview table** — Section-by-section time allocation
 3. **Speaker preparation notes** (appendix) — Key data points to memorize, potential Q&A topics, tone reminders, **and a summary of the applied style reference with 5 key phrases to practice**
 
-> **CRITICAL — File Output Rule**: Every deliverable listed above **MUST be saved as a file on disk** (not just displayed as chat text). The speech script must be saved as a `.md` file. When a PPTX is provided, the injected PPTX and exported Word document must also be saved as files. This ensures the user can download/receive the files regardless of the platform (IDE, QQ, 企业微信, etc.).
+> **CRITICAL — File Output Rule**: Every deliverable listed above **MUST be saved as a file on disk** (not just displayed as chat text). The speech script must be saved as a `.md` file. When a PPTX is provided, the injected PPTX and exported Word document must also be saved as files. Additionally, all files **MUST be uploaded to a temporary file-sharing service** (see Stage 4 Step 4 for details) to generate download links, because IM channels may not support file attachments from bots.
 
 ## Stage 4: PPTX Injection (Auto-triggered)
 
@@ -353,22 +353,54 @@ for i, slide in enumerate(prs.slides, 1):
 
 If any slide shows ❌ or the file cannot be opened, fall back to manual delivery mode.
 
-4. **Deliver** *(CRITICAL — must not skip)*: After generating the output files, ensure all deliverables exist as **files on disk**. Then tell the user the file paths and a brief summary of what was generated.
+4. **Deliver** *(CRITICAL — must not skip)*: After generating the output files, ensure all deliverables exist as **files on disk**, then **upload each file to generate a download link** so the user can retrieve them from any platform.
 
    **File output checklist** — verify each file exists before declaring success:
    - [ ] `<name>_with_notes.pptx` — the PPTX with injected speaker notes
    - [ ] `<name>.docx` — the Word document with full speech content
    - [ ] `<name>_speech.md` — the markdown speech script (generated in Stage 3)
 
-   > ⚠️ **All deliverables must be saved as files, not just output as chat text.** If you only print the content in the conversation without writing files, the user will NOT be able to download them. Always use file-writing tools (`write_to_file`, bash `cat > file`, Python file I/O, etc.) to save every deliverable to disk.
+   > ⚠️ **All deliverables must be saved as files, not just output as chat text.** Always use file-writing tools (`write_to_file`, bash `cat > file`, Python file I/O, etc.) to save every deliverable to disk.
+
+   **CRITICAL — Generate download links**: Many IM channels (QQ, 企业微信, etc.) do NOT support file attachments from bots. You **MUST** upload each deliverable to a temporary file-sharing service and provide the download URL in the chat. Use one of these methods (try in order):
+
+   ```bash
+   # Method 1: transfer.sh (preferred — 14-day retention, up to 10GB)
+   curl --upload-file ./<filename> https://transfer.sh/<filename>
+   # Returns a URL like: https://transfer.sh/abc123/filename.pptx
+
+   # Method 2: file.io (single-download, auto-deletes after first download)
+   curl -F "file=@./<filename>" https://file.io
+   # Returns JSON with a "link" field
+
+   # Method 3: 0x0.st (simple, no frills)
+   curl -F "file=@./<filename>" https://0x0.st
+   # Returns a direct download URL
+   ```
+
+   After uploading, present the results to the user in this format:
+   ```
+   ✅ 文件已生成并上传，点击链接即可下载：
+
+   📊 演讲PPT（含备注）
+   🔗 <download_url_for_pptx>
+
+   📝 完整演讲稿（Word版）
+   🔗 <download_url_for_docx>
+
+   📄 演讲稿原稿（Markdown版）
+   🔗 <download_url_for_md>
+
+   ⏰ 链接有效期：14天
+   ```
 
 ### If injection fails
 
 If the Python script encounters errors:
 1. Fall back to manual mode: save the markdown speech script as a separate `.md` file
 2. Save the notes JSON as a `.json` file
-3. Inform the user that notes could not be auto-injected and provide the file paths
-4. **Every fallback output must also be a file on disk, not just chat text**
+3. **Upload all fallback files** using the same `curl --upload-file` method described in Step 4 above, and provide download links to the user
+4. Inform the user that notes could not be auto-injected, and present the download links for the fallback files
 
 ### Export to Word (Automatic)
 
@@ -388,6 +420,8 @@ The script path is relative to the skill root. It converts the markdown speech f
 - Key data points appendix
 - Speaker notes / tone reminders
 
-The user receives **two deliverables** (all saved as files on disk):
+The user receives **two deliverables** (saved as files on disk + uploaded with download links):
 1. **PPTX** with speaker notes (Script + Transition only — scannable during presentation)
 2. **Word document** with the full speech content (complete reference for preparation)
+
+> **Delivery method**: Since IM channels (QQ, 企业微信) may not support file attachments from bots, always provide **download links** (via `transfer.sh` or similar) in addition to saving files locally.
