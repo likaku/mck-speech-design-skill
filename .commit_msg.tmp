@@ -1,0 +1,20 @@
+feat: mck-speech-design-skill v1.0 — complete skill with style reference & perf optimization
+
+Core Skill:
+- SKILL.md: 4-stage workflow (Briefing → Architecture → Drafting → PPTX Injection)
+- Dependencies: python-pptx, python-docx (markitdown optional fallback)
+- JSON generation via Python script for encoding safety
+- Auto-verification built into injection script
+- Script download instructions for remote usage
+
+Scripts (optimized):
+- inject_notes.py: single PPTX load, in-memory verification, batch output
+- speech_to_docx.py: cross-platform CJK font, pre-compiled regex
+
+New Feature — Speaking Style Reference:
+- references/speech-style-guide.md: 8 categories, 27 style profiles
+- Integrated into Stage 1 (menu) + Stage 3 (6 application guidelines)
+
+Test Artifacts:
+- Musk-style E2E test: 16/16 injected + verified
+- Standard + Musk notes JSON and speech scripts
